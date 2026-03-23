@@ -1,0 +1,57 @@
+# ============================
+# Arquivos do Python
+# ============================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ============================
+# Ambiente virtual
+# ============================
+venv/
+env/
+ENV/
+.venv/
+
+# ============================
+# Django
+# ============================
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+static/
+
+# Arquivos de migração gerados automaticamente
+*/migrations/*.py
+!*/migrations/__init__.py
+
+# ============================
+# Configurações sensíveis
+# ============================
+.env
+*.env
+.env.*
+
+# ============================
+# IDEs e editores
+# ============================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ============================
+# Sistema operacional
+# ============================
+.DS_Store
+Thumbs.db
