@@ -42,3 +42,17 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.validated_data)
+    
+from rest_framework.permissions import IsAuthenticated
+
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "email": user.email,
+            "nome": user.nome,
+            "tipo_usuario": user.tipo_usuario
+        })
