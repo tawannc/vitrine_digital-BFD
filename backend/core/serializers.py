@@ -51,3 +51,49 @@ class LoginSerializer(serializers.Serializer):
                 "tipo_usuario": user.tipo_usuario
             }
         }
+
+import uuid
+from django.utils import timezone
+from datetime import timedelta
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate_email(self, value):
+        if not User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Usuário não encontrado.")
+        return value
+
+    def save(self):
+        user = User.objects.get(email=self.validated_data['email'])
+        token = uuid.uuid4().hex
+
+        user.reset_password_token = token
+        user.reset_password_expires = timezone.now() + timedelta(hours=1)
+        user.save()
+
+        return token
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    token = serializers.CharField()
+    new_password = serializers.CharField(min_length=8)
+
+    def validate(self, data):
+        user = User.objects.filter(
+            reset_password_token=data['token'],
+            reset_password_expires__gte=timezone.now()
+        ).first()
+
+        if not user:
+            raise serializers.ValidationError("Token inválido ou expirado.")
+
+        data['user'] = user
+        return data
+
+    def save(self):
+        user = self.validated_data['user']
+        user.set_password(self.validated_data['new_password'])
+        user.reset_password_token = None
+        user.reset_password_expires = None
+        user.save()
