@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import User
+from core.models import Produto, ImagemProduto, Vendedor
 
 class RegisterUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
@@ -97,3 +98,47 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         user.reset_password_token = None
         user.reset_password_expires = None
         user.save()
+
+class ImagemProdutoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImagemProduto
+        fields = ['id', 'imagem', 'data_upload']
+
+
+class ProdutoSerializer(serializers.ModelSerializer):
+    imagens = ImagemProdutoSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Produto
+        fields = [
+            'id',
+            'nome',
+            'descricao',
+            'preco',
+            'categoria',
+            'estoque',
+            'data_criacao',
+            'data_atualizacao',
+            'imagens',
+        ]
+
+class ProdutoCreateUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Produto
+        fields = [
+            'nome',
+            'descricao',
+            'preco',
+            'categoria',
+            'estoque',
+        ]
+
+class VendedorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Vendedor
+        fields = [
+            'id',
+            'nome_loja',
+            'descricao_loja',
+            'foto_perfil_loja',
+        ]

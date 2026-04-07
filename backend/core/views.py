@@ -12,6 +12,18 @@ from .serializers import (
 from .serializers import RegisterUserSerializer
 from .models import User
 from .serializers import LoginSerializer
+from rest_framework import generics, permissions
+from core.models import Vendedor
+from core.serializers import VendedorSerializer
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+from core.models import Vendedor, Produto, ImagemProduto
+from core.serializers import (
+    VendedorSerializer,
+    ProdutoSerializer,
+    ProdutoCreateUpdateSerializer,
+    ImagemProdutoSerializer
+)
 
 class RegisterVendedorView(APIView):
     permission_classes = [AllowAny]
@@ -47,7 +59,97 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(serializer.validated_data)
-    
+
+class IsVendedor(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            hasattr(request.user, 'vendedor')
+        )
+
+class PerfilLojaView(generics.RetrieveUpdateAPIView):
+    serializer_class = VendedorSerializer
+    permission_classes = [permissions.IsAuthenticated, IsVendedor]
+
+    def get_object(self):
+        return self.request.user.vendedor
+
+class ProdutoListCreateView(generics.ListCreateAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsVendedor]
+
+    def get_queryset(self):
+        return Produto.objects.filter(vendedor=self.request.user.vendedor)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return ProdutoCreateUpdateSerializer
+        return ProdutoSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(vendedor=self.request.user.vendedor)
+
+class ProdutoDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [permissions.IsAuthenticated, IsVendedor]
+    lookup_url_kwarg = 'produto_id'
+
+    def get_queryset(self):
+        return Produto.objects.filter(vendedor=self.request.user.vendedor)
+
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return ProdutoCreateUpdateSerializer
+        return ProdutoSerializer
+
+class UploadImagemProdutoView(APIView):
+    permission_classes = [permissions.IsAuthenticated, IsVendedor]
+
+    def post(self, request, produto_id):
+        try:
+            produto = Produto.objects.get(
+                id=produto_id,
+                vendedor=request.user.vendedor
+            )
+        except Produto.DoesNotExist:
+            return Response(
+                {"detail": "Produto não encontrado."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        arquivos = request.FILES.getlist('imagens')
+        imagens_criadas = []
+
+        for arquivo in arquivos:
+            img = ImagemProduto.objects.create(
+                produto=produto,
+                imagem=arquivo
+            )
+            imagens_criadas.append(img)
+
+        serializer = ImagemProdutoSerializer(imagens_criadas, many=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class VitrineProdutoListView(generics.ListAPIView):
+    serializer_class = ProdutoSerializer
+
+    def get_queryset(self):
+        queryset = Produto.objects.all()
+
+        categoria = self.request.query_params.get('categoria')
+        nome = self.request.query_params.get('nome')
+
+        if categoria:
+            queryset = queryset.filter(categoria__icontains=categoria)
+        if nome:
+            queryset = queryset.filter(nome__icontains=nome)
+
+        return queryset
+
+
+class VitrineProdutoDetailView(generics.RetrieveAPIView):
+    queryset = Produto.objects.all()
+    serializer_class = ProdutoSerializer
+    lookup_url_kwarg = 'produto_id'
+
 from rest_framework.permissions import IsAuthenticated
 
 
@@ -83,3 +185,18 @@ class PasswordResetConfirmView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response({"message": "Senha redefinida com sucesso."})
+
+class IsVendedor(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            hasattr(request.user, 'vendedor')
+        )
+
+class PerfilLojaView(generics.RetrieveUpdateAPIView):
+    serializer_class = VendedorSerializer
+    permission_classes = [permissions.IsAuthenticated, IsVendedor]
+
+    def get_object(self):
+        return self.request.user.vendedor
+    

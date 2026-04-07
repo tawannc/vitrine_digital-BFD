@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.db import models
 from django.utils import timezone
-
+from django.conf import settings
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -47,3 +47,49 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     reset_password_token = models.CharField(max_length=255, blank=True, null=True)
     reset_password_expires = models.DateTimeField(blank=True, null=True)
+
+class Produto(models.Model):
+    vendedor = models.ForeignKey(
+        'Vendedor',
+        on_delete=models.CASCADE,
+        related_name='produtos'
+    )
+    nome = models.CharField(max_length=255)
+    descricao = models.TextField()
+    preco = models.DecimalField(max_digits=10, decimal_places=2)
+    categoria = models.CharField(max_length=100, blank=True, null=True)
+    estoque = models.PositiveIntegerField(default=0)
+    data_criacao = models.DateTimeField(auto_now_add=True)
+    data_atualizacao = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.nome
+
+class ImagemProduto(models.Model):
+    produto = models.ForeignKey(
+        Produto,
+        on_delete=models.CASCADE,
+        related_name='imagens'
+    )
+    imagem = models.ImageField(upload_to='produtos/')
+    data_upload = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Imagem de {self.produto.nome}"
+    
+class Vendedor(models.Model):
+    usuario = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='vendedor'
+    )
+    nome_loja = models.CharField(max_length=255, blank=True, null=True)
+    descricao_loja = models.TextField(blank=True, null=True)
+    foto_perfil_loja = models.ImageField(
+        upload_to='lojas/',
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return self.nome_loja or self.usuario.nome
