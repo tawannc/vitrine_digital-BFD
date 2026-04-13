@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Upload de Imagens</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Enviar Imagem para Produto</h1>
+
+    <label>ID do Produto:</label><br>
+    <input type="number" id="produtoId"><br><br>
+
+    <label>Selecione a imagem:</label><br>
+    <input type="file" id="imagem"><br><br>
+
+    <button onclick="enviarImagem()">Enviar</button>
+
+    <pre id="resultado"></pre>
+
+    <script>
+        async function enviarImagem() {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Você precisa fazer login primeiro!");
+                return;
+            }
+
+            const produtoId = document.getElementById("produtoId").value;
+            const arquivo = document.getElementById("imagem").files[0];
+
+            if (!arquivo) {
+                alert("Selecione uma imagem antes de enviar!");
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append("imagens", arquivo);
+
+            const resposta = await fetch(`http://localhost:8000/produtos/${produtoId}/imagens/`, {
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + token
+                },
+                body: formData
+            });
+
+            const dados = await resposta.json();
+            document.getElementById("resultado").textContent = JSON.stringify(dados, null, 2);
+
+            if (resposta.ok) {
+                alert("Imagem enviada com sucesso!");
+            }
+        }
+    </script>
+</body>
+</html>

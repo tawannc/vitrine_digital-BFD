@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Meus Produtos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Produtos do Vendedor</h1>
+
+    <button onclick="carregarProdutos()">Carregar Produtos</button>
+
+    <ul id="lista-produtos"></ul>
+
+    <script>
+        async function carregarProdutos() {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Você precisa fazer login primeiro!");
+                return;
+            }
+
+            const resposta = await fetch("http://localhost:8000/produtos/", {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            const dados = await resposta.json();
+
+            const lista = document.getElementById("lista-produtos");
+            lista.innerHTML = ""; // limpa a lista
+
+            if (dados.length === 0) {
+                lista.innerHTML = "<li>Nenhum produto encontrado.</li>";
+                return;
+            }
+
+            dados.forEach(produto => {
+                const item = document.createElement("li");
+                item.textContent = `${produto.id} - ${produto.nome} (R$ ${produto.preco})`;
+                lista.appendChild(item);
+            });
+        }
+    </script>
+</body>
+</html>

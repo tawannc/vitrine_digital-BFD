@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar Produto</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Editar Produto</h1>
+
+    <label>ID do Produto:</label><br>
+    <input type="number" id="produtoId"><br><br>
+
+    <button onclick="carregarProduto()">Carregar Produto</button>
+
+    <hr><br>
+
+    <label>Nome:</label><br>
+    <input type="text" id="nome"><br><br>
+
+    <label>Descrição:</label><br>
+    <textarea id="descricao"></textarea><br><br>
+
+    <label>Preço:</label><br>
+    <input type="number" id="preco" step="0.01"><br><br>
+
+    <label>Categoria:</label><br>
+    <input type="text" id="categoria"><br><br>
+
+    <label>Estoque:</label><br>
+    <input type="number" id="estoque"><br><br>
+
+    <button onclick="salvarProduto()">Salvar Alterações</button>
+
+    <pre id="resultado"></pre>
+
+    <script>
+        async function carregarProduto() {
+            const token = localStorage.getItem("token");
+            const id = document.getElementById("produtoId").value;
+
+            if (!token) {
+                alert("Você precisa fazer login primeiro!");
+                return;
+            }
+
+            if (!id) {
+                alert("Digite um ID de produto!");
+                return;
+            }
+
+            const resposta = await fetch(`http://localhost:8000/produtos/${id}/`, {
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            const produto = await resposta.json();
+
+            if (produto.detail) {
+                alert("Produto não encontrado ou não pertence ao vendedor.");
+                return;
+            }
+
+            document.getElementById("nome").value = produto.nome;
+            document.getElementById("descricao").value = produto.descricao;
+            document.getElementById("preco").value = produto.preco;
+            document.getElementById("categoria").value = produto.categoria;
+            document.getElementById("estoque").value = produto.estoque;
+
+            document.getElementById("resultado").textContent = JSON.stringify(produto, null, 2);
+        }
+
+        async function salvarProduto() {
+            const token = localStorage.getItem("token");
+            const id = document.getElementById("produtoId").value;
+
+            const nome = document.getElementById("nome").value;
+            const descricao = document.getElementById("descricao").value;
+            const preco = document.getElementById("preco").value;
+            const categoria = document.getElementById("categoria").value;
+            const estoque = document.getElementById("estoque").value;
+
+            const resposta = await fetch(`http://localhost:8000/produtos/${id}/`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": "Bearer " + token
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    descricao: descricao,
+                    preco: parseFloat(preco),
+                    categoria: categoria,
+                    estoque: parseInt(estoque)
+                })
+            });
+
+            const dados = await resposta.json();
+            document.getElementById("resultado").textContent = JSON.stringify(dados, null, 2);
+
+            if (resposta.ok) {
+                alert("Produto atualizado com sucesso!");
+            }
+        }
+    </script>
+</body>
+</html>

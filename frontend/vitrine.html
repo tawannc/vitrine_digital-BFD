@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Vitrine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Vitrine de Produtos</h1>
+
+    <button onclick="carregarVitrine()">Carregar Vitrine</button>
+
+    <div id="produtos" style="display: flex; flex-wrap: wrap; gap: 20px; margin-top: 20px;"></div>
+
+    <script>
+        async function carregarVitrine() {
+            const resposta = await fetch("http://localhost:8000/vitrine/");
+            const dados = await resposta.json();
+
+            const container = document.getElementById("produtos");
+            container.innerHTML = "";
+
+            if (dados.length === 0) {
+                container.innerHTML = "<p>Nenhum produto disponível.</p>";
+                return;
+            }
+
+            dados.forEach(produto => {
+                const card = document.createElement("div");
+                card.style.border = "1px solid #ccc";
+                card.style.padding = "10px";
+                card.style.width = "200px";
+
+                // imagem principal (se existir)
+                let imagemHTML = "<p>Sem imagem</p>";
+                if (produto.imagens && produto.imagens.length > 0) {
+                    imagemHTML = `<img src="${produto.imagens[0].imagem}" width="180">`;
+                }
+
+                card.innerHTML = `
+                    ${imagemHTML}
+                    <h3>${produto.nome}</h3>
+                    <p>R$ ${produto.preco}</p>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>

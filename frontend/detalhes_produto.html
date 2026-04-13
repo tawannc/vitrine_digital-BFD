@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Detalhes do Produto</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Detalhes do Produto</h1>
+
+    <label>ID do Produto:</label><br>
+    <input type="number" id="produtoId"><br><br>
+
+    <button onclick="carregarDetalhes()">Carregar Detalhes</button>
+
+    <div id="detalhes" style="margin-top: 20px;"></div>
+
+    <script>
+        async function carregarDetalhes() {
+            const id = document.getElementById("produtoId").value;
+
+            if (!id) {
+                alert("Digite um ID de produto!");
+                return;
+            }
+
+            const resposta = await fetch(`http://localhost:8000/vitrine/${id}/`);
+            const produto = await resposta.json();
+
+            const container = document.getElementById("detalhes");
+            container.innerHTML = "";
+
+            if (produto.detail) {
+                container.innerHTML = "<p>Produto não encontrado.</p>";
+                return;
+            }
+
+            let imagensHTML = "<p>Sem imagens</p>";
+
+            if (produto.imagens && produto.imagens.length > 0) {
+                imagensHTML = produto.imagens
+                    .map(img => `<img src="${img.imagem}" width="200" style="margin-right: 10px;">`)
+                    .join("");
+            }
+
+            container.innerHTML = `
+                <h2>${produto.nome}</h2>
+                <p><strong>Preço:</strong> R$ ${produto.preco}</p>
+                <p><strong>Categoria:</strong> ${produto.categoria}</p>
+                <p><strong>Estoque:</strong> ${produto.estoque}</p>
+                <p><strong>Descrição:</strong> ${produto.descricao}</p>
+                <h3>Imagens:</h3>
+                <div>${imagensHTML}</div>
+            `;
+        }
+    </script>
+</body>
+</html>

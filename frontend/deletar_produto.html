@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Deletar Produto</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Deletar Produto</h1>
+
+    <label>ID do Produto:</label><br>
+    <input type="number" id="produtoId"><br><br>
+
+    <button onclick="deletarProduto()">Deletar Produto</button>
+
+    <pre id="resultado"></pre>
+
+    <script>
+        async function deletarProduto() {
+            const token = localStorage.getItem("token");
+            const id = document.getElementById("produtoId").value;
+
+            if (!token) {
+                alert("Você precisa fazer login primeiro!");
+                return;
+            }
+
+            if (!id) {
+                alert("Digite um ID de produto!");
+                return;
+            }
+
+            const resposta = await fetch(`http://localhost:8000/produtos/${id}/`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": "Bearer " + token
+                }
+            });
+
+            if (resposta.status === 204) {
+                document.getElementById("resultado").textContent = "Produto deletado com sucesso!";
+                alert("Produto deletado com sucesso!");
+            } else {
+                const dados = await resposta.json();
+                document.getElementById("resultado").textContent = JSON.stringify(dados, null, 2);
+                alert("Erro ao deletar produto.");
+            }
+        }
+    </script>
+</body>
+</html>

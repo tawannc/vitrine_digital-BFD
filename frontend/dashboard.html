@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard do Vendedor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h1 {
+            margin-bottom: 10px;
+        }
+        .card {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            max-width: 400px;
+        }
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 300px;
+            margin-top: 20px;
+        }
+        a {
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            text-align: center;
+        }
+        a:hover {
+            background: #0056b3;
+        }
+        .produto {
+            border-bottom: 1px solid #ddd;
+            padding: 8px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Dashboard do Vendedor</h1>
+
+    <div class="card">
+        <h2>Informações da Loja</h2>
+        <p><strong>Nome:</strong> <span id="nomeLoja">Carregando...</span></p>
+        <p><strong>Descrição:</strong> <span id="descLoja">Carregando...</span></p>
+    </div>
+
+    <div class="card">
+        <h2>Resumo</h2>
+        <p><strong>Total de Produtos:</strong> <span id="totalProdutos">0</span></p>
+    </div>
+
+    <div class="card">
+        <h2>Últimos Produtos</h2>
+        <div id="listaProdutos"></div>
+    </div>
+
+    <h2>Navegação</h2>
+    <div class="menu">
+        <a href="criar_produto.html">Criar Produto</a>
+        <a href="produtos.html">Listar Produtos</a>
+        <a href="editar_produto.html">Editar Produto</a>
+        <a href="deletar_produto.html">Deletar Produto</a>
+        <a href="upload.html">Upload de Imagens</a>
+        <a href="loja.html">Minha Loja</a>
+        <a href="vitrine.html">Vitrine Pública</a>
+        <a href="menu.html">Menu Principal</a>
+    </div>
+
+    <script>
+        async function carregarDashboard() {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                alert("Você precisa fazer login primeiro!");
+                return;
+            }
+
+            // Carregar dados da loja
+            const lojaResp = await fetch("http://localhost:8000/loja/", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            const loja = await lojaResp.json();
+
+            document.getElementById("nomeLoja").textContent = loja.nome || "Sem nome";
+            document.getElementById("descLoja").textContent = loja.descricao || "Sem descrição";
+
+            // Carregar produtos
+            const prodResp = await fetch("http://localhost:8000/produtos/", {
+                headers: { "Authorization": "Bearer " + token }
+            });
+            const produtos = await prodResp.json();
+
+            document.getElementById("totalProdutos").textContent = produtos.length;
+
+            const lista = document.getElementById("listaProdutos");
+            lista.innerHTML = "";
+
+            if (produtos.length === 0) {
+                lista.innerHTML = "<p>Nenhum produto cadastrado.</p>";
+                return;
+            }
+
+            produtos.slice(0, 5).forEach(p => {
+                const div = document.createElement("div");
+                div.className = "produto";
+                div.innerHTML = `<strong>${p.nome}</strong> — R$ ${p.preco}`;
+                lista.appendChild(div);
+            });
+        }
+
+        carregarDashboard();
+    </script>
+
+</body>
+</html>
