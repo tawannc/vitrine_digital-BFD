@@ -10,6 +10,7 @@ from core.views import (
     VitrineProdutoListView,
     VitrineProdutoDetailView
 )
+from .views import CategoryListCreateView, CategoryDetailView
 
 urlpatterns = [
     path('register/vendedor/', RegisterVendedorView.as_view()),
@@ -24,4 +25,6 @@ urlpatterns = [
     path('produtos/<int:produto_id>/imagens/', UploadImagemProdutoView.as_view()),
     path('vitrine/produtos/', VitrineProdutoListView.as_view()),
     path('vitrine/produtos/<int:produto_id>/', VitrineProdutoDetailView.as_view()),
+    path("categorias/", CategoryListCreateView.as_view()),
+    path("categorias/<int:pk>/", CategoryDetailView.as_view()),
 ]

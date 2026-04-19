@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Criar Categoria</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Criar Categoria</h1>
+
+<label>Nome:</label>
+<input type="text" id="nome">
+
+<label>Descrição:</label>
+<textarea id="descricao"></textarea>
+
+<button onclick="criarCategoria()">Criar Categoria</button>
+
+<pre id="resultado"></pre>
+
+<script>
+async function criarCategoria() {
+    const token = localStorage.getItem("token");
+
+    const nome = document.getElementById("nome").value;
+    const descricao = document.getElementById("descricao").value;
+
+    const resposta = await fetch("http://localhost:8000/categorias/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            nome: nome,
+            descricao: descricao
+        })
+    });
+
+    const dados = await resposta.json();
+    document.getElementById("resultado").textContent = JSON.stringify(dados, null, 2);
+
+    if (resposta.ok) {
+        alert("Categoria criada com sucesso!");
+    }
+}
+</script>
+
+</body>
+</html>

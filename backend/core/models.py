@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager, User
 from django.db import models
 from django.utils import timezone
 from django.conf import settings
@@ -93,3 +93,13 @@ class Vendedor(models.Model):
 
     def __str__(self):
         return self.nome_loja or self.usuario.nome
+
+class Category(models.Model):
+    nome = models.CharField(max_length=100)
+    descricao = models.TextField(blank=True)
+    vendedor = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.nome
+
+categoria = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)

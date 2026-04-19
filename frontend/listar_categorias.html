@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Categorias</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Minhas Categorias</h1>
+
+<button onclick="carregarCategorias()">Carregar Categorias</button>
+
+<ul id="lista"></ul>
+
+<script>
+async function carregarCategorias() {
+    const token = localStorage.getItem("token");
+
+    const resposta = await fetch("http://localhost:8000/categorias/", {
+        headers: {
+            "Authorization": "Bearer " + token
+        }
+    });
+
+    const categorias = await resposta.json();
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    categorias.forEach(cat => {
+        const li = document.createElement("li");
+        li.textContent = `${cat.nome} — ${cat.descricao}`;
+        lista.appendChild(li);
+    });
+}
+</script>
+
+</body>
+</html>

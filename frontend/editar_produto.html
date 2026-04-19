@@ -6,104 +6,121 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Editar Produto</h1>
 
-    <label>ID do Produto:</label><br>
-    <input type="number" id="produtoId"><br><br>
+<h1>Editar Produto</h1>
 
-    <button onclick="carregarProduto()">Carregar Produto</button>
+<label>ID do Produto:</label>
+<input type="number" id="produtoId">
 
-    <hr><br>
+<button onclick="carregarProduto()">Carregar Produto</button>
 
-    <label>Nome:</label><br>
-    <input type="text" id="nome"><br><br>
+<hr>
 
-    <label>Descrição:</label><br>
-    <textarea id="descricao"></textarea><br><br>
+<label>Nome:</label>
+<input type="text" id="nome">
 
-    <label>Preço:</label><br>
-    <input type="number" id="preco" step="0.01"><br><br>
+<label>Descrição:</label>
+<textarea id="descricao"></textarea>
 
-    <label>Categoria:</label><br>
-    <input type="text" id="categoria"><br><br>
+<label>Preço:</label>
+<input type="number" id="preco" step="0.01">
 
-    <label>Estoque:</label><br>
-    <input type="number" id="estoque"><br><br>
+<label>Estoque:</label>
+<input type="number" id="estoque">
 
-    <button onclick="salvarProduto()">Salvar Alterações</button>
+<label>Categoria:</label>
+<select id="categoria"></select>
 
-    <pre id="resultado"></pre>
+<button onclick="editarProduto()">Salvar Alterações</button>
 
-    <script>
-        async function carregarProduto() {
-            const token = localStorage.getItem("token");
-            const id = document.getElementById("produtoId").value;
+<pre id="resultado"></pre>
 
-            if (!token) {
-                alert("Você precisa fazer login primeiro!");
-                return;
-            }
+<script>
+// ===============================
+// 1. CARREGAR CATEGORIAS
+// ===============================
+async function carregarCategorias() {
+    const token = localStorage.getItem("token");
 
-            if (!id) {
-                alert("Digite um ID de produto!");
-                return;
-            }
+    const resposta = await fetch("http://localhost:8000/categorias/", {
+        headers: { "Authorization": "Bearer " + token }
+    });
 
-            const resposta = await fetch(`http://localhost:8000/produtos/${id}/`, {
-                method: "GET",
-                headers: {
-                    "Authorization": "Bearer " + token
-                }
-            });
+    const categorias = await resposta.json();
 
-            const produto = await resposta.json();
+    const select = document.getElementById("categoria");
+    select.innerHTML = ""; // limpa antes de preencher
 
-            if (produto.detail) {
-                alert("Produto não encontrado ou não pertence ao vendedor.");
-                return;
-            }
+    categorias.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat.id;
+        option.textContent = cat.nome;
+        select.appendChild(option);
+    });
+}
 
-            document.getElementById("nome").value = produto.nome;
-            document.getElementById("descricao").value = produto.descricao;
-            document.getElementById("preco").value = produto.preco;
-            document.getElementById("categoria").value = produto.categoria;
-            document.getElementById("estoque").value = produto.estoque;
+carregarCategorias(); // chama automaticamente ao abrir a página
 
-            document.getElementById("resultado").textContent = JSON.stringify(produto, null, 2);
-        }
 
-        async function salvarProduto() {
-            const token = localStorage.getItem("token");
-            const id = document.getElementById("produtoId").value;
+// ===============================
+// 2. CARREGAR PRODUTO PELO ID
+// ===============================
+async function carregarProduto() {
+    const token = localStorage.getItem("token");
+    const id = document.getElementById("produtoId").value;
 
-            const nome = document.getElementById("nome").value;
-            const descricao = document.getElementById("descricao").value;
-            const preco = document.getElementById("preco").value;
-            const categoria = document.getElementById("categoria").value;
-            const estoque = document.getElementById("estoque").value;
+    const resposta = await fetch(`http://localhost:8000/produtos/${id}/`, {
+        headers: { "Authorization": "Bearer " + token }
+    });
 
-            const resposta = await fetch(`http://localhost:8000/produtos/${id}/`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
-                },
-                body: JSON.stringify({
-                    nome: nome,
-                    descricao: descricao,
-                    preco: parseFloat(preco),
-                    categoria: categoria,
-                    estoque: parseInt(estoque)
-                })
-            });
+    const dados = await resposta.json();
 
-            const dados = await resposta.json();
-            document.getElementById("resultado").textContent = JSON.stringify(dados, null, 2);
+    document.getElementById("nome").value = dados.nome;
+    document.getElementById("descricao").value = dados.descricao;
+    document.getElementById("preco").value = dados.preco;
+    document.getElementById("estoque").value = dados.estoque;
 
-            if (resposta.ok) {
-                alert("Produto atualizado com sucesso!");
-            }
-        }
-    </script>
+    // Seleciona a categoria atual
+    document.getElementById("categoria").value = dados.categoria;
+}
+
+
+// ===============================
+// 3. EDITAR PRODUTO (PUT)
+// ===============================
+async function editarProduto() {
+    const token = localStorage.getItem("token");
+    const id = document.getElementById("produtoId").value;
+
+    const nome = document.getElementById("nome").value;
+    const descricao = document.getElementById("descricao").value;
+    const preco = document.getElementById("preco").value;
+    const estoque = document.getElementById("estoque").value;
+    const categoria = document.getElementById("categoria").value;
+
+    const resposta = await fetch(`http://localhost:8000/produtos/${id}/`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            nome: nome,
+            descricao: descricao,
+            preco: parseFloat(preco),
+            estoque: parseInt(estoque),
+            categoria: parseInt(categoria)
+        })
+    });
+
+    const dados = await resposta.json();
+    document.getElementById("resultado").textContent = JSON.stringify(dados, null, 2);
+
+    if (resposta.ok) {
+        alert("Produto atualizado com sucesso!");
+    }
+}
+</script>
+
 </body>
 </html>

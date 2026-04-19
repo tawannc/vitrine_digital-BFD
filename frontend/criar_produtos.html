@@ -14,6 +14,9 @@
     <label>Descrição:</label><br>
     <textarea id="descricao"></textarea><br><br>
 
+    <label>Categoria:</label>
+    <select id="categoria"></select>
+
     <label>Preço:</label><br>
     <input type="number" id="preco" step="0.01"><br><br>
 
@@ -29,41 +32,62 @@
 
     <script>
         async function criarProduto() {
-            const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token");
 
-            if (!token) {
-                alert("Você precisa fazer login primeiro!");
-                return;
-            }
+    if (!token) {
+        alert("Você precisa fazer login primeiro!");
+        return;
+    }
+    
+    const nome = document.getElementById("nome").value;
+    const descricao = document.getElementById("descricao").value;
+    const preco = document.getElementById("preco").value;
+    const categoria = document.getElementById("categoria").value;
+    const estoque = document.getElementById("estoque").value;
 
-            const nome = document.getElementById("nome").value;
-            const descricao = document.getElementById("descricao").value;
-            const preco = document.getElementById("preco").value;
-            const categoria = document.getElementById("categoria").value;
-            const estoque = document.getElementById("estoque").value;
+    const resposta = await fetch("http://localhost:8000/produtos/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            nome: nome,
+            descricao: descricao,
+            preco: parseFloat(preco),
+            categoria: parseInt(categoria),
+            estoque: parseInt(estoque)
+        })
+    });
 
-            const resposta = await fetch("http://localhost:8000/produtos/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + token
-                },
-                body: JSON.stringify({
-                    nome: nome,
-                    descricao: descricao,
-                    preco: parseFloat(preco),
-                    categoria: categoria,
-                    estoque: parseInt(estoque)
-                })
-            });
+    const dados = await resposta.json();
+    document.getElementById("resultado").textContent = JSON.stringify(dados, null, 2);
 
-            const dados = await resposta.json();
-            document.getElementById("resultado").textContent = JSON.stringify(dados, null, 2);
+    if (resposta.ok) {
+        alert("Produto criado com sucesso!");
+    }
+}
 
-            if (resposta.ok) {
-                alert("Produto criado com sucesso!");
-            }
-        }
+async function carregarCategorias() {
+    const token = localStorage.getItem("token");
+
+    const resposta = await fetch("http://localhost:8000/categorias/", {
+        headers: { "Authorization": "Bearer " + token }
+    });
+
+    const categorias = await resposta.json();
+
+    const select = document.getElementById("categoria");
+    categorias.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat.id;
+        option.textContent = cat.nome;
+        select.appendChild(option);
+    });
+}
+
+carregarCategorias();
+
     </script>
 </body>
 </html>
