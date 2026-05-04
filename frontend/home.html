@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Página Inicial</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- =============================== -->
+    <!-- 1. HEADER COM LOGO + BUSCA -->
+    <!-- =============================== -->
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
+        <h1>Vitrine Digital</h1>
+
+        <input 
+            type="text" 
+            id="campoBusca" 
+            placeholder="Buscar produtos ou lojas..." 
+            style="width: 300px; padding: 8px;"
+        >
+        <button onclick="buscar()">Buscar</button>
+    </header>
+
+    <hr>
+
+    <!-- =============================== -->
+    <!-- 2. CARROSSEL DE LOJAS -->
+    <!-- =============================== -->
+    <section>
+        <h2>Lojas em Destaque</h2>
+        <div id="carrosselLojas" style="display: flex; gap: 20px; overflow-x: auto; padding: 10px;"></div>
+    </section>
+
+    <hr>
+
+    <!-- =============================== -->
+    <!-- 3. PRODUTOS EM DESTAQUE -->
+    <!-- =============================== -->
+    <section>
+        <h2>Produtos em Destaque</h2>
+        <div id="produtosDestaque" style="display: flex; flex-wrap: wrap; gap: 20px;"></div>
+    </section>
+
+    <script>
+        // ===============================
+        // CARREGAR LOJAS EM DESTAQUE
+        // ===============================
+        async function carregarLojas() {
+            const resposta = await fetch("http://localhost:8000/lojas/");
+            const lojas = await resposta.json();
+
+            const container = document.getElementById("carrosselLojas");
+            container.innerHTML = "";
+
+            lojas.forEach(loja => {
+                const card = document.createElement("div");
+                card.style.border = "1px solid #ccc";
+                card.style.padding = "10px";
+                card.style.width = "200px";
+                card.style.textAlign = "center";
+
+                card.innerHTML = `
+                    <h3>${loja.nome}</h3>
+                    <p>${loja.descricao ?? ""}</p>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // ===============================
+        // CARREGAR PRODUTOS EM DESTAQUE
+        // ===============================
+        async function carregarProdutos() {
+            const resposta = await fetch("http://localhost:8000/vitrine/");
+            const produtos = await resposta.json();
+
+            const container = document.getElementById("produtosDestaque");
+            container.innerHTML = "";
+
+            produtos.forEach(produto => {
+                const card = document.createElement("div");
+                card.style.border = "1px solid #ccc";
+                card.style.padding = "10px";
+                card.style.width = "200px";
+
+                let imagemHTML = "<p>Sem imagem</p>";
+                if (produto.imagens && produto.imagens.length > 0) {
+                    imagemHTML = `<img src="${produto.imagens[0].imagem}" width="180">`;
+                }
+
+                card.innerHTML = `
+                    ${imagemHTML}
+                    <h3>${produto.nome}</h3>
+                    <p>R$ ${produto.preco}</p>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // ===============================
+        // CAMPO DE BUSCA
+        // ===============================
+        function buscar() {
+            const termo = document.getElementById("campoBusca").value;
+            alert("Busca ainda não implementada: " + termo);
+        }
+
+        // ===============================
+        // INICIALIZAÇÃO DA PÁGINA
+        // ===============================
+        carregarLojas();
+        carregarProdutos();
+    </script>
+
+</body>
+</html>
