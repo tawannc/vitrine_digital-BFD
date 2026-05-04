@@ -11,6 +11,11 @@ from core.views import (
     VitrineProdutoDetailView
 )
 from .views import CategoryListCreateView, CategoryDetailView
+from .views import (
+    VariationCreateView,
+    VariationListView,
+    VariationDetailView
+)
 
 urlpatterns = [
     path('register/vendedor/', RegisterVendedorView.as_view()),
@@ -27,4 +32,7 @@ urlpatterns = [
     path('vitrine/produtos/<int:produto_id>/', VitrineProdutoDetailView.as_view()),
     path("categorias/", CategoryListCreateView.as_view()),
     path("categorias/<int:pk>/", CategoryDetailView.as_view()),
+    path("variacoes/", VariationCreateView.as_view()),
+    path("variacoes/produto/<int:produto_id>/", VariationListView.as_view()),
+    path("variacoes/<int:pk>/", VariationDetailView.as_view()),
 ]

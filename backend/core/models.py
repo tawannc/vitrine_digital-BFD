@@ -103,3 +103,12 @@ class Category(models.Model):
         return self.nome
 
 categoria = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)
+
+class Variation(models.Model):
+    produto = models.ForeignKey(Produto, on_delete=models.CASCADE, related_name="variacoes")
+    nome = models.CharField(max_length=100)   # Ex: Tamanho, Cor
+    valor = models.CharField(max_length=100)  # Ex: M, Azul
+    estoque = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.nome}: {self.valor}"

@@ -221,3 +221,22 @@ class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Category.objects.filter(vendedor=self.request.user)
+
+class VariationCreateView(generics.CreateAPIView):
+    serializer_class = VariationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+class VariationListView(generics.ListAPIView):
+    serializer_class = VariationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        produto_id = self.kwargs["produto_id"]
+        return Variation.objects.filter(produto_id=produto_id)
+
+class VariationDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = VariationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Variation.objects.all()

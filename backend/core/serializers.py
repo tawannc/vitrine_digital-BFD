@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import User
-from core.models import Produto, ImagemProduto, Vendedor, Category
+from core.models import Produto, ImagemProduto, Vendedor, Category, Variation
 
 class RegisterUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
@@ -148,3 +148,15 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = "__all__"
         read_only_fields = ["vendedor"]
+
+class VariationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Variation
+        fields = "__all__"
+
+class ProdutoSerializer(serializers.ModelSerializer):
+    variacoes = VariationSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Produto
+        fields = "__all__"
