@@ -14,16 +14,16 @@ from .serializers import RegisterUserSerializer
 from .models import User
 from .serializers import LoginSerializer
 from rest_framework import generics, permissions
-from core.models import Vendedor, Produto
+from core.models import Vendedor, Produto, ImagemProduto, Variation
 from core.serializers import VendedorSerializer
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from core.models import Vendedor, Produto, ImagemProduto
 from core.serializers import (
     VendedorSerializer,
     ProdutoSerializer,
     ProdutoCreateUpdateSerializer,
-    ImagemProdutoSerializer
+    ImagemProdutoSerializer,
+    VariationSerializer
 )
 
 class RegisterVendedorView(APIView):
