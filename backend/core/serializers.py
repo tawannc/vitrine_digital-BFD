@@ -156,7 +156,12 @@ class VariationSerializer(serializers.ModelSerializer):
 
 class ProdutoSerializer(serializers.ModelSerializer):
     variacoes = VariationSerializer(many=True, read_only=True)
+    disponivel = serializers.SerializerMethodField()
 
     class Meta:
         model = Produto
         fields = "__all__"
+
+    def get_disponivel(self, obj):
+        return obj.disponivel
+

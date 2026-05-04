@@ -64,6 +64,15 @@ class Produto(models.Model):
 
     def __str__(self):
         return self.nome
+    
+    @property
+    def disponivel(self):
+        # Se tiver variações, o estoque depende delas
+        if self.variacoes.exists():
+            return any(v.estoque > 0 for v in self.variacoes.all())
+        # Se não tiver variações, usa o estoque do produto
+        return self.estoque > 0
+
 
 class ImagemProduto(models.Model):
     produto = models.ForeignKey(
