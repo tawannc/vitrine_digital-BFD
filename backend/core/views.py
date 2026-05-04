@@ -9,11 +9,12 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer
 )
+from rest_framework.decorators import api_view
 from .serializers import RegisterUserSerializer
 from .models import User
 from .serializers import LoginSerializer
 from rest_framework import generics, permissions
-from core.models import Vendedor
+from core.models import Vendedor, Produto
 from core.serializers import VendedorSerializer
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
@@ -240,3 +241,15 @@ class VariationDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         return Variation.objects.all()
+
+@api_view(['GET'])
+def buscar(request):
+    termo = request.GET.get('q', '')
+
+    produtos = Produto.objects.filter(nome__icontains=termo)
+    lojas = Vendedor.objects.filter(nome__icontains=termo)
+
+    return Response({
+        "produtos": ProdutoSerializer(produtos, many=True).data,
+        "lojas": VendedorSerializer(lojas, many=True).data
+    })

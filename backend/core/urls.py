@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import PasswordResetConfirmView, PasswordResetRequestView, RegisterVendedorView, RegisterCompradorView
+from .views import PasswordResetConfirmView, PasswordResetRequestView, RegisterVendedorView, RegisterCompradorView, buscar
 from .views import LoginView
 from .views import MeView
 from core.views import (
@@ -35,4 +35,5 @@ urlpatterns = [
     path("variacoes/", VariationCreateView.as_view()),
     path("variacoes/produto/<int:produto_id>/", VariationListView.as_view()),
     path("variacoes/<int:pk>/", VariationDetailView.as_view()),
+    path("buscar/", buscar),
 ]
