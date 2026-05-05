@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro</title>
+</head>
+<body>
+
+    <h2>Cadastro</h2>
+
+    <input id="nome" placeholder="Nome">
+    <input id="email" placeholder="Email">
+    <input id="senha" type="password" placeholder="Senha">
+
+    <select id="tipo_usuario">
+        <option value="COMPRADOR">Comprador</option>
+        <option value="VENDEDOR">Vendedor</option>
+    </select>
+
+    <label>
+        <input type="checkbox" id="aceita_termos">
+        Aceito os termos
+    </label>
+
+    <button onclick="cadastrar()">Cadastrar</button>
+
+    <script>
+        async function cadastrar() {
+            const nome = document.getElementById("nome").value;
+            const email = document.getElementById("email").value;
+            const senha = document.getElementById("senha").value;
+            const tipo = document.getElementById("tipo_usuario").value;
+            const aceita = document.getElementById("aceita_termos").checked;
+
+            // Define a rota correta
+            let rota = "";
+            if (tipo === "VENDEDOR") {
+                rota = "http://localhost:8000/register/vendedor/";
+            } else {
+                rota = "http://localhost:8000/register/comprador/";
+            }
+
+            const resposta = await fetch(rota, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    nome: nome,
+                    email: email,
+                    password: senha,
+                    tipo_usuario: tipo,
+                    aceita_termos: aceita
+                })
+            });
+
+            const dados = await resposta.json();
+
+            if (resposta.ok) {
+                alert("Cadastro realizado com sucesso");
+                window.location.href = "login.html";
+            } else {
+                alert("Erro: " + JSON.stringify(dados));
+            }
+        }
+    </script>
+
+</body>
+</html>
