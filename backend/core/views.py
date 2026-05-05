@@ -73,7 +73,8 @@ class LoginView(APIView):
         return Response({
             "id": user.id,
             "email": user.email,
-            "nome": user.first_name
+            "nome": user.nome,  # ← CORREÇÃO AQUI
+            "tipo_usuario": user.tipo_usuario
         })
 
 class IsVendedor(permissions.BasePermission):
