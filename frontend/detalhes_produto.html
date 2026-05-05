@@ -6,53 +6,120 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Detalhes do Produto</h1>
 
-    <label>ID do Produto:</label><br>
-    <input type="number" id="produtoId"><br><br>
+<h1>Detalhes do Produto</h1>
 
-    <button onclick="carregarDetalhes()">Carregar Detalhes</button>
+<div id="produto"></div>
 
-    <div id="detalhes" style="margin-top: 20px;"></div>
+<style>
+    .badge-esgotado {
+        background: red;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+        display: inline-block;
+        margin-top: 10px;
+    }
 
-    <script>
-        async function carregarDetalhes() {
-            const id = document.getElementById("produtoId").value;
+    button[disabled] {
+        background: #aaa;
+        cursor: not-allowed;
+    }
+</style>
 
-            if (!id) {
-                alert("Digite um ID de produto!");
-                return;
+<script>
+// ===============================
+// PEGAR ID DO PRODUTO PELA URL
+// ===============================
+function getProdutoId() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get("id");
+}
+
+// ===============================
+// CARREGAR DETALHES DO PRODUTO
+// ===============================
+async function carregarProduto() {
+    const id = getProdutoId();
+    const resposta = await fetch(`http://localhost:8000/produtos/${id}/`);
+    const produto = await resposta.json();
+
+    const container = document.getElementById("produto");
+
+    // imagem principal
+    let imagemHTML = "<p>Sem imagem</p>";
+    if (produto.imagens && produto.imagens.length > 0) {
+        imagemHTML = `<img src="${produto.imagens[0].imagem}" width="250">`;
+    }
+
+    // HTML base
+    container.innerHTML = `
+        ${imagemHTML}
+        <h2>${produto.nome}</h2>
+        <p><strong>Preço:</strong> R$ ${produto.preco}</p>
+        <p><strong>Descrição:</strong> ${produto.descricao}</p>
+        <p><strong>Categoria:</strong> ${produto.categoria ?? "Sem categoria"}</p>
+    `;
+
+    // ===============================
+    // MOSTRAR BADGE "ESGOTADO"
+    // ===============================
+    if (!produto.disponivel) {
+        container.innerHTML += `<span class="badge-esgotado">Esgotado</span>`;
+    }
+
+    // ===============================
+    // VARIAÇÕES (SE EXISTIREM)
+    // ===============================
+    if (produto.variacoes && produto.variacoes.length > 0) {
+        let selectHTML = `
+            <label><strong>Escolha uma variação:</strong></label><br>
+            <select id="variacaoSelect">
+        `;
+
+        produto.variacoes.forEach(v => {
+            let texto = `${v.nome}: ${v.valor} (Estoque: ${v.estoque})`;
+
+            if (v.estoque === 0) {
+                selectHTML += `<option value="${v.id}" disabled>${texto} - ESGOTADO</option>`;
+            } else {
+                selectHTML += `<option value="${v.id}">${texto}</option>`;
             }
+        });
 
-            const resposta = await fetch(`http://localhost:8000/vitrine/${id}/`);
-            const produto = await resposta.json();
+        selectHTML += `</select><br><br>`;
 
-            const container = document.getElementById("detalhes");
-            container.innerHTML = "";
+        container.innerHTML += selectHTML;
+    }
 
-            if (produto.detail) {
-                container.innerHTML = "<p>Produto não encontrado.</p>";
-                return;
-            }
+    // ===============================
+    // BOTÃO DE COMPRA
+    // ===============================
+    const botao = document.createElement("button");
+    botao.textContent = "Comprar";
 
-            let imagensHTML = "<p>Sem imagens</p>";
+    // bloquear compra se produto estiver indisponível
+    if (!produto.disponivel) {
+        botao.disabled = true;
+        botao.textContent = "Indisponível";
+    }
 
-            if (produto.imagens && produto.imagens.length > 0) {
-                imagensHTML = produto.imagens
-                    .map(img => `<img src="${img.imagem}" width="200" style="margin-right: 10px;">`)
-                    .join("");
-            }
+    botao.onclick = () => comprar(produto.id);
 
-            container.innerHTML = `
-                <h2>${produto.nome}</h2>
-                <p><strong>Preço:</strong> R$ ${produto.preco}</p>
-                <p><strong>Categoria:</strong> ${produto.categoria}</p>
-                <p><strong>Estoque:</strong> ${produto.estoque}</p>
-                <p><strong>Descrição:</strong> ${produto.descricao}</p>
-                <h3>Imagens:</h3>
-                <div>${imagensHTML}</div>
-            `;
-        }
-    </script>
+    container.appendChild(botao);
+}
+
+// ===============================
+// FUNÇÃO DE COMPRA (DEMO)
+// ===============================
+function comprar(id) {
+    alert("Compra ainda não implementada, mas o botão funciona!");
+}
+
+carregarProduto();
+</script>
+
 </body>
 </html>
+

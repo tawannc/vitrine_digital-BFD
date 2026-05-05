@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Página Inicial</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- =============================== -->
+    <!-- 1. HEADER COM LOGO + BUSCA -->
+    <!-- =============================== -->
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 20px;">
+        <h1>Vitrine Digital</h1>
+
+        <input 
+            type="text" 
+            id="campoBusca" 
+            placeholder="Buscar produtos ou lojas..." 
+            style="width: 300px; padding: 8px;"
+        >
+        <button onclick="buscar()">Buscar</button>
+    </header>
+
+    <hr>
+
+    <!-- =============================== -->
+    <!-- 2. CARROSSEL DE LOJAS -->
+    <!-- =============================== -->
+    <section style="position: relative; padding: 20px 0;">
+    <h2>Lojas em Destaque</h2>
+
+    <!-- Botão esquerda -->
+    <button id="setaEsquerda" 
+            style="position:absolute; left:0; top:50%; transform:translateY(-50%);
+                   background:#fff; border:1px solid #ccc; padding:10px; cursor:pointer;">
+        ◀
+    </button>
+
+    <!-- Área do carrossel -->
+    <div id="carrosselLojas" 
+         style="display:flex; gap:20px; overflow:hidden; scroll-behavior:smooth; padding:10px;">
+    </div>
+
+    <!-- Botão direita -->
+    <button id="setaDireita" 
+            style="position:absolute; right:0; top:50%; transform:translateY(-50%);
+                   background:#fff; border:1px solid #ccc; padding:10px; cursor:pointer;">
+        ▶
+    </button>
+    </section>
+
+    <hr>
+
+    <!-- =============================== -->
+    <!-- 3. PRODUTOS EM DESTAQUE -->
+    <!-- =============================== -->
+    <section>
+        <h2>Produtos em Destaque</h2>
+        <div id="produtosDestaque" style="display: flex; flex-wrap: wrap; gap: 20px;"></div>
+    </section>
+
+    <script>
+        // ===============================
+        // CARREGAR LOJAS EM DESTAQUE
+        // ===============================
+        async function carregarLojas() {
+    const resposta = await fetch("http://localhost:8000/lojas/");
+    const lojas = await resposta.json();
+
+    const container = document.getElementById("carrosselLojas");
+    container.innerHTML = "";
+
+    lojas.forEach(loja => {
+        const card = document.createElement("div");
+
+        // Layout profissional do card
+        card.style.border = "1px solid #ccc";
+        card.style.padding = "15px";
+        card.style.width = "200px";
+        card.style.minWidth = "200px";
+        card.style.borderRadius = "8px";
+        card.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
+        card.style.background = "white";
+        card.style.textAlign = "center";
+        card.style.transition = "transform 0.2s";
+
+        // Efeito hover
+        card.onmouseover = () => card.style.transform = "scale(1.05)";
+        card.onmouseout  = () => card.style.transform = "scale(1)";
+
+        card.innerHTML = `
+            <h3>${loja.nome}</h3>
+            <p>${loja.descricao ?? ""}</p>
+        `;
+
+        container.appendChild(card);
+    });
+}
+
+// ===============================
+// CONTROLES DO CARROSSEL
+// ===============================
+function configurarCarrossel() {
+    const carrossel = document.getElementById("carrosselLojas");
+    const esquerda = document.getElementById("setaEsquerda");
+    const direita = document.getElementById("setaDireita");
+
+    const scrollAmount = 220; // largura do card + gap
+
+    esquerda.onclick = () => {
+        carrossel.scrollLeft -= scrollAmount;
+    };
+
+    direita.onclick = () => {
+        carrossel.scrollLeft += scrollAmount;
+    };
+}
+
+        // ===============================
+        // CARREGAR PRODUTOS EM DESTAQUE
+        // ===============================
+        async function carregarProdutos() {
+            const resposta = await fetch("http://localhost:8000/vitrine/");
+            const produtos = await resposta.json();
+
+            const container = document.getElementById("produtosDestaque");
+            container.innerHTML = "";
+
+            produtos.forEach(produto => {
+                const card = document.createElement("div");
+                card.style.border = "1px solid #ccc";
+                card.style.padding = "10px";
+                card.style.width = "200px";
+
+                let imagemHTML = "<p>Sem imagem</p>";
+                if (produto.imagens && produto.imagens.length > 0) {
+                    imagemHTML = `<img src="${produto.imagens[0].imagem}" width="180">`;
+                }
+
+                card.innerHTML = `
+                    ${imagemHTML}
+                    <h3>${produto.nome}</h3>
+                    <p>R$ ${produto.preco}</p>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // ===============================
+        // CAMPO DE BUSCA (AGORA FUNCIONANDO)
+        // ===============================
+        async function buscar() {
+            const termo = document.getElementById("campoBusca").value;
+
+            if (!termo.trim()) {
+                alert("Digite algo para buscar");
+                return;
+            }
+
+            const resposta = await fetch(`http://localhost:8000/buscar/?q=${termo}`);
+            const dados = await resposta.json();
+
+            const container = document.getElementById("produtosDestaque");
+            container.innerHTML = "";
+
+            // LOJAS
+            if (dados.lojas.length > 0) {
+                container.innerHTML += `<h3>Lojas encontradas:</h3>`;
+                dados.lojas.forEach(loja => {
+                    container.innerHTML += `
+                        <div style="border:1px solid #ccc; padding:10px; margin:5px;">
+                            <strong>${loja.nome}</strong><br>
+                            ${loja.descricao ?? ""}
+                        </div>
+                    `;
+                });
+            }
+
+            // PRODUTOS
+            if (dados.produtos.length > 0) {
+                container.innerHTML += `<h3>Produtos encontrados:</h3>`;
+                dados.produtos.forEach(produto => {
+                    let imagemHTML = "Sem imagem";
+                    if (produto.imagens && produto.imagens.length > 0) {
+                        imagemHTML = `<img src="${produto.imagens[0].imagem}" width="150">`;
+                    }
+
+                    container.innerHTML += `
+                        <div style="border:1px solid #ccc; padding:10px; margin:5px; width:200px;">
+                            ${imagemHTML}
+                            <h4>${produto.nome}</h4>
+                            <p>R$ ${produto.preco}</p>
+                        </div>
+                    `;
+                });
+            }
+
+            // NENHUM RESULTADO
+            if (dados.lojas.length === 0 && dados.produtos.length === 0) {
+                container.innerHTML = "<p>Nenhum resultado encontrado.</p>";
+            }
+        }
+
+        // ===============================
+        // INICIALIZAÇÃO DA PÁGINA
+        // ===============================
+        carregarLojas().then(configurarCarrossel);
+        carregarProdutos();
+    </script>
+
+</body>
+</html>
+

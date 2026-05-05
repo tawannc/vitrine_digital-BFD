@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Variações do Produto</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>Gerenciar Variações</h1>
+
+<label>ID do Produto:</label>
+<input type="number" id="produtoId">
+
+<button onclick="carregarVariacoes()">Carregar Variações</button>
+
+<hr>
+
+<h2>Adicionar Variação</h2>
+
+<label>Nome da Variação:</label>
+<input type="text" id="nome">
+
+<label>Valor:</label>
+<input type="text" id="valor">
+
+<label>Estoque:</label>
+<input type="number" id="estoque">
+
+<button onclick="criarVariacao()">Adicionar</button>
+
+<hr>
+
+<h2>Variações Existentes</h2>
+<ul id="lista"></ul>
+
+<pre id="resultado"></pre>
+
+<script>
+// ===============================
+// 1. LISTAR VARIAÇÕES DO PRODUTO
+// ===============================
+async function carregarVariacoes() {
+    const token = localStorage.getItem("token");
+    const produtoId = document.getElementById("produtoId").value;
+
+    const resposta = await fetch(`http://localhost:8000/variacoes/produto/${produtoId}/`, {
+        headers: { "Authorization": "Bearer " + token }
+    });
+
+    const variacoes = await resposta.json();
+
+    const lista = document.getElementById("lista");
+    lista.innerHTML = "";
+
+    variacoes.forEach(v => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+            <strong>${v.nome}</strong>: ${v.valor} — Estoque: ${v.estoque}
+            <button onclick="editar(${v.id})">Editar</button>
+            <button onclick="deletar(${v.id})">Excluir</button>
+        `;
+        lista.appendChild(li);
+    });
+}
+
+
+// ===============================
+// 2. CRIAR VARIAÇÃO
+// ===============================
+async function criarVariacao() {
+    const token = localStorage.getItem("token");
+    const produtoId = document.getElementById("produtoId").value;
+
+    const nome = document.getElementById("nome").value;
+    const valor = document.getElementById("valor").value;
+    const estoque = document.getElementById("estoque").value;
+
+    const resposta = await fetch("http://localhost:8000/variacoes/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            produto: parseInt(produtoId),
+            nome: nome,
+            valor: valor,
+            estoque: parseInt(estoque)
+        })
+    });
+
+    const dados = await resposta.json();
+    document.getElementById("resultado").textContent = JSON.stringify(dados, null, 2);
+
+    if (resposta.ok) {
+        alert("Variação criada!");
+        carregarVariacoes();
+    }
+}
+
+
+// ===============================
+// 3. EDITAR VARIAÇÃO
+// ===============================
+async function editar(id) {
+    const novoValor = prompt("Novo valor da variação:");
+    const novoEstoque = prompt("Novo estoque:");
+
+    const token = localStorage.getItem("token");
+
+    const resposta = await fetch(`http://localhost:8000/variacoes/${id}/`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer " + token
+        },
+        body: JSON.stringify({
+            valor: novoValor,
+            estoque: parseInt(novoEstoque)
+        })
+    });
+
+    if (resposta.ok) {
+        alert("Variação atualizada!");
+        carregarVariacoes();
+    }
+}
+
+
+// ===============================
+// 4. DELETAR VARIAÇÃO
+// ===============================
+async function deletar(id) {
+    const token = localStorage.getItem("token");
+
+    const resposta = await fetch(`http://localhost:8000/variacoes/${id}/`, {
+        method: "DELETE",
+        headers: { "Authorization": "Bearer " + token }
+    });
+
+    if (resposta.ok) {
+        alert("Variação excluída!");
+        carregarVariacoes();
+    }
+}
+</script>
+
+</body>
+</html>
