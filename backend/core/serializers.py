@@ -34,7 +34,7 @@ class LoginSerializer(serializers.Serializer):
 
     def validate(self, data):
         user = authenticate(
-            email=data['email'],
+            username=data['email'],   # ← AQUI ESTÁ O PROBLEMA
             password=data['password']
         )
 

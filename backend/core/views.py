@@ -25,6 +25,11 @@ from core.serializers import (
     ImagemProdutoSerializer,
     VariationSerializer
 )
+from django.contrib.auth import authenticate
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
 class RegisterVendedorView(APIView):
     permission_classes = [AllowAny]
@@ -57,9 +62,19 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = LoginSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.validated_data)
+        email = request.data.get("email")
+        password = request.data.get("password")
+
+        user = authenticate(request, username=email, password=password)
+
+        if user is None:
+            return Response({"detail": "Credenciais inválidas"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        return Response({
+            "id": user.id,
+            "email": user.email,
+            "nome": user.first_name
+        })
 
 class IsVendedor(permissions.BasePermission):
     def has_permission(self, request, view):
